@@ -1,26 +1,1389 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>前端转向 AI Coding 的常见问题全景</title>
-  <style>
-    :root { color-scheme: light dark; }
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      min-height: 100vh; margin: 0; padding: 24px; text-align: center;
-      background: #fafafa; color: #1f2328;
-    }
-    @media (prefers-color-scheme: dark) {
-      body { background: #0d1117; color: #e6edf3; }
-    }
-    h1 { font-size: 1.6rem; margin-bottom: 8px; }
-    p { color: #888; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Coding 前端常见问题全景 · 风险清单</title>
+<style>
+:root{
+  --bg:#fff;
+  --ink:#0a0a0a;
+  --ink-2:#3d3d3d;
+  --ink-3:#6f6f6f;
+  --line:#e2e2e2;
+  --line-2:#c9c9c9;
+  --fill:#f5f5f4;
+  --fill-2:#ebebea;
+  --accent:#1a56db;          /* 唯一彩色：链接蓝 */
+  --flag:#0a0a0a;
+  --font-body:-apple-system,"PingFang SC","Segoe UI","Microsoft YaHei",sans-serif;
+  --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Courier New",monospace;
+  --w:1180px;
+  --pad:clamp(18px,4vw,40px);
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth;scroll-padding-top:76px}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--font-body);font-size:15px;line-height:1.75;
+  text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased;
+  font-feature-settings:"kern" 1;
+}
+img{max-width:100%;display:block}
+a{color:var(--accent);text-decoration:none;border-bottom:1px solid rgba(26,86,219,.28)}
+a:hover{border-bottom-color:var(--accent)}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.wrap{max-width:var(--w);margin-inline:auto;padding-inline:var(--pad)}
+.wrap--wide{max-width:1460px}
+.mono{font-family:var(--font-mono)}
+code{font-family:var(--font-mono);font-size:.88em;background:var(--fill-2);padding:1px 4px;border:1px solid var(--line)}
+b,strong{font-weight:700}
+.num{font-family:var(--font-mono);font-variant-numeric:tabular-nums}
+
+/* ---------- 顶部细网格扫描层（母题：验收坐标系） ---------- */
+.scan{
+  position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.55;
+  background-image:linear-gradient(90deg,rgba(0,0,0,.035) 1px,transparent 1px);
+  background-size:calc(100% / 6) 100%;
+}
+main{position:relative;z-index:1}
+.progress{position:fixed;top:0;left:0;height:2px;background:var(--ink);width:0;z-index:60}
+
+/* ---------- 导航 ---------- */
+.nav{
+  position:sticky;top:0;z-index:50;background:rgba(255,255,255,.93);
+  backdrop-filter:saturate(1.2) blur(8px);border-bottom:1px solid var(--ink);
+  display:flex;align-items:center;justify-content:space-between;gap:16px;
+  padding:0 var(--pad);min-height:54px;
+}
+.nav__mark{display:flex;align-items:center;gap:9px;color:var(--ink);border:0;font-weight:700;letter-spacing:-.01em}
+.nav__glyph{font-size:15px;line-height:1}
+.nav__name{font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nav__links{display:flex;gap:2px;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+.nav__links::-webkit-scrollbar{display:none}
+.nav__links a{
+  border:0;color:var(--ink-3);font-family:var(--font-mono);font-size:11.5px;
+  letter-spacing:.04em;padding:8px 10px;min-height:44px;display:flex;align-items:center;
+  white-space:nowrap;transition:color .18s,background .18s;
+}
+.nav__links a:hover{color:var(--ink);background:var(--fill)}
+.nav__links a[aria-current="true"]{color:var(--ink);background:var(--fill-2);font-weight:700}
+
+/* ---------- 章节骨架 ---------- */
+section{border-bottom:1px solid var(--line)}
+.sec-head{
+  display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,3fr);gap:clamp(16px,4vw,52px);
+  padding:clamp(48px,7vw,84px) 0 0;
+}
+.sec-id{
+  font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;color:var(--ink-3);
+  text-transform:uppercase;border-top:2px solid var(--ink);padding-top:8px;
+}
+.sec-title{
+  font-size:clamp(26px,4.2vw,42px);line-height:1.12;letter-spacing:-.025em;font-weight:800;margin:0;
+  text-wrap:balance;
+}
+.sec-lede{margin:14px 0 0;color:var(--ink-2);font-size:15.5px;max-width:62ch;text-wrap:pretty}
+.tag{
+  display:inline-block;font-family:var(--font-mono);font-size:10.5px;letter-spacing:.1em;
+  text-transform:uppercase;border:1px solid var(--line-2);padding:2px 7px;color:var(--ink-2);
+  background:var(--bg);white-space:nowrap;
+}
+.tag--solid{background:var(--ink);color:#fff;border-color:var(--ink)}
+
+/* ---------- Hero ---------- */
+.hero{padding:clamp(44px,7vw,80px) 0 clamp(40px,6vw,64px);border-bottom:1px solid var(--ink)}
+.hero__meta{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:26px}
+.hero__title{
+  font-size:clamp(38px,8.4vw,92px);line-height:.98;letter-spacing:-.045em;font-weight:900;margin:0;
+  text-wrap:balance;
+}
+.hero__title .thin{font-weight:300;color:var(--ink-3);letter-spacing:-.03em}
+.hero__sub{
+  margin:24px 0 0;font-size:clamp(15px,2vw,18px);line-height:1.7;color:var(--ink-2);
+  max-width:66ch;text-wrap:pretty;
+}
+.hero__note{
+  margin-top:22px;padding:14px 16px;border-left:2px solid var(--ink);background:var(--fill);
+  font-size:13.5px;color:var(--ink-2);
+}
+.hero__note b{color:var(--ink)}
+.hero__stats{
+  margin-top:38px;border-top:1px solid var(--line);
+  display:grid;grid-template-columns:repeat(4,1fr);
+}
+.stat{border-right:1px solid var(--line);padding:18px 16px 20px}
+.stat:last-child{border-right:0}
+.stat__v{font-family:var(--font-mono);font-size:clamp(30px,5vw,46px);line-height:1;letter-spacing:-.03em;font-weight:700;font-variant-numeric:tabular-nums}
+.stat__v small{font-size:.42em;font-weight:400;letter-spacing:0;margin-left:3px;color:var(--ink-3)}
+.stat__k{margin-top:9px;font-size:12.5px;color:var(--ink-3);line-height:1.5}
+
+/* ---------- 证据卡 ---------- */
+.ev-grid{margin:34px 0 clamp(44px,6vw,72px);display:grid;gap:1px;background:var(--line);border:1px solid var(--line)}
+.ev{background:var(--bg);padding:22px clamp(16px,2.4vw,26px) 24px;display:flex;flex-direction:column;gap:14px}
+.ev__top{display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.ev__n{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;color:var(--ink-3)}
+.ev__date{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.ev__src{font-size:16.5px;font-weight:750;letter-spacing:-.015em;line-height:1.35;margin:0;text-wrap:balance}
+.ev__claim{font-size:13.5px;color:var(--ink-2);margin:0;text-wrap:pretty}
+.bars{display:grid;gap:9px;margin-top:2px}
+.bar{display:grid;grid-template-columns:1fr;gap:5px}
+.bar__lb{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;color:var(--ink-2);font-family:var(--font-mono)}
+.bar__lb b{font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums}
+.bar__track{height:7px;background:var(--fill-2);position:relative;overflow:hidden}
+.bar__fill{position:absolute;inset:0 auto 0 0;width:0;background:var(--ink);transition:width 1s cubic-bezier(.2,.7,.2,1)}
+.bar--alt .bar__fill{background:var(--ink-3)}
+.ev__limit{
+  margin:0;padding-top:13px;border-top:1px dashed var(--line-2);
+  font-size:12.5px;line-height:1.68;color:var(--ink-3);text-wrap:pretty;
+}
+.ev__limit b{color:var(--ink-2);font-weight:600}
+.ev__link{font-family:var(--font-mono);font-size:11.5px;letter-spacing:.03em;align-self:flex-start}
+
+.evidence-note{
+  margin:0 0 clamp(44px,6vw,72px);padding:20px clamp(16px,2.4vw,26px);
+  border:1px solid var(--ink);background:var(--fill);font-size:13.5px;color:var(--ink-2);text-wrap:pretty;
+}
+.evidence-note b{color:var(--ink)}
+
+/* ---------- 筛选条 ---------- */
+.filters{
+  position:sticky;top:54px;z-index:40;background:var(--bg);
+  border-bottom:1px solid var(--line);padding:12px 0;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+}
+.filters__lb{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-right:2px}
+.chip{
+  font-family:var(--font-mono);font-size:11.5px;letter-spacing:.03em;
+  border:1px solid var(--line-2);background:var(--bg);color:var(--ink-2);
+  padding:7px 11px;min-height:34px;cursor:pointer;transition:background .16s,color .16s,border-color .16s;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.chip:hover{border-color:var(--ink);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip__c{font-size:10px;opacity:.6;font-variant-numeric:tabular-nums}
+.chip[aria-pressed="true"] .chip__c{opacity:.75}
+.filters__count{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+/* ---------- 问题矩阵 ---------- */
+.matrix{margin:0 0 clamp(48px,6vw,80px);border:1px solid var(--line);border-bottom:0}
+.grp{border-bottom:1px solid var(--line)}
+.grp__head{
+  display:grid;grid-template-columns:46px minmax(0,1fr) auto;align-items:center;gap:14px;
+  padding:14px clamp(12px,2vw,20px);background:var(--fill);border-bottom:1px solid var(--line);
+}
+.grp__k{font-family:var(--font-mono);font-size:19px;font-weight:700;letter-spacing:-.02em;line-height:1}
+.grp__t{font-size:15px;font-weight:750;letter-spacing:-.01em;margin:0}
+.grp__d{display:block;font-size:11.5px;font-weight:400;color:var(--ink-3);font-family:var(--font-mono);letter-spacing:.02em;margin-top:2px}
+.grp__c{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+
+.item{border-bottom:1px solid var(--line);background:var(--bg)}
+.item:last-child{border-bottom:0}
+.item__btn{
+  width:100%;background:none;border:0;font:inherit;color:inherit;text-align:left;cursor:pointer;
+  display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:clamp(10px,2vw,18px);align-items:center;
+  padding:16px clamp(12px,2vw,20px);min-height:60px;transition:background .16s;
+}
+.item__btn:hover{background:var(--fill)}
+.item__id{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.04em;font-variant-numeric:tabular-nums}
+.item__name{font-size:15.5px;font-weight:650;letter-spacing:-.012em;line-height:1.45}
+.item__risk{display:flex;align-items:center;gap:10px}
+.item__toggle{font-family:var(--font-mono);font-size:15px;color:var(--ink-3);line-height:1;transition:transform .2s}
+.item[open] .item__toggle,.item.open .item__toggle{transform:rotate(90deg);color:var(--ink)}
+.item__body{
+  padding:2px clamp(12px,2vw,20px) 24px;
+  border-top:1px dashed var(--line);
+  background:linear-gradient(180deg,rgba(0,0,0,.014),transparent 120px);
+}
+.item__body[hidden]{display:none}
+/* 风险 / 验收 宽屏并排，正文可用宽度最大化 */
+.item__col{
+  display:grid;gap:clamp(16px,2.4vw,34px);min-width:0;
+  grid-template-columns:1fr;
+}
+.blk{border-left:2px solid var(--line-2);padding-left:clamp(14px,1.4vw,20px);min-width:0}
+.blk--ok{border-left-color:var(--ink)}
+.blk__lb{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);margin-bottom:7px}
+.blk--ok .blk__lb{color:var(--ink)}
+.blk p{margin:0;font-size:14px;line-height:1.8;color:var(--ink-2);text-wrap:pretty}
+.blk--ok p{color:var(--ink)}
+.blk a{font-size:13.5px}
+.blk .cite{font-family:var(--font-mono);font-size:11px;letter-spacing:.03em}
+/* 宽屏：风险 | 验收 左右并列，各占约 60ch 的最佳阅读宽度 */
+@media (min-width:1080px){
+  .item__col{grid-template-columns:minmax(0,1fr) minmax(0,1fr);align-items:start}
+  .item__col .blk--ok{border-left-color:var(--ink)}
+  .blk p{font-size:14.5px}
+}
+/* 超宽屏才做标题对齐缩进，优先保证正文宽度 */
+@media (min-width:1400px){
+  .item__body{padding-left:calc(clamp(12px,2vw,20px) + 52px + clamp(10px,2vw,18px))}
+}
+
+/* 风险徽标 */
+.pill{
+  font-family:var(--font-mono);font-size:10px;letter-spacing:.08em;text-transform:uppercase;
+  border:1px solid;padding:2px 6px;line-height:1.5;white-space:nowrap;
+}
+.pill--p0{background:var(--ink);color:#fff;border-color:var(--ink)}
+.pill--p1{background:#fff;color:var(--ink);border-color:var(--ink)}
+.pill--p2{background:var(--fill-2);color:var(--ink-2);border-color:var(--line-2)}
+.pill--p3{background:#fff;color:var(--ink-3);border-color:var(--line-2)}
+
+/* ---------- 分层 ---------- */
+.tiers{margin:34px 0 clamp(44px,6vw,72px);display:grid;gap:1px;background:var(--line);border:1px solid var(--ink)}
+.tier{background:var(--bg);padding:24px clamp(16px,2.4vw,28px);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1.6fr);gap:clamp(16px,3vw,40px)}
+.tier--lead{background:var(--ink);color:#fff}
+.tier--lead .tier__k,.tier--lead .tier__d,.tier--lead .tier__lb{color:rgba(255,255,255,.66)}
+.tier__l{display:grid;gap:10px;align-content:start}
+.tier__n{font-family:var(--font-mono);font-size:11px;letter-spacing:.16em;opacity:.6}
+.tier__t{font-size:clamp(19px,2.6vw,25px);font-weight:800;letter-spacing:-.022em;line-height:1.2;margin:0}
+.tier__d{font-size:13.5px;line-height:1.72;color:var(--ink-2);margin:0;text-wrap:pretty}
+.tier__r{display:grid;gap:14px;align-content:start}
+.tier__lb{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3)}
+.tier__ids{display:flex;flex-wrap:wrap;gap:6px}
+.tier__ids .pill{cursor:pointer;transition:opacity .16s,transform .16s;padding:6px 10px;font-size:11px}
+.tier__ids .pill:hover{opacity:.65;transform:translateY(-1px)}
+.tier--lead .pill--p1{background:#fff;color:var(--ink)}
+.tier__focus{font-size:13.5px;line-height:1.75;margin:0;text-wrap:pretty}
+.tier--lead .tier__focus{color:rgba(255,255,255,.88)}
+.tiers__note{margin:0 0 clamp(44px,6vw,72px);font-size:13.5px;color:var(--ink-2);padding-left:16px;border-left:2px solid var(--line-2)}
+
+/* ---------- 防御清单 ---------- */
+.def{margin:34px 0 clamp(44px,6vw,72px);display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--line);border:1px solid var(--line)}
+.def__i{background:var(--bg);padding:22px clamp(16px,2.2vw,24px) 24px;display:grid;grid-template-columns:38px minmax(0,1fr);gap:14px;transition:background .2s}
+.def__i:hover{background:var(--fill)}
+.def__n{font-family:var(--font-mono);font-size:12px;font-weight:700;color:var(--ink-3);letter-spacing:.06em;padding-top:4px;font-variant-numeric:tabular-nums}
+.def__t{font-size:15px;font-weight:750;letter-spacing:-.015em;line-height:1.4;margin:0 0 8px;text-wrap:balance}
+.def__d{font-size:13.5px;line-height:1.75;color:var(--ink-2);margin:0;text-wrap:pretty}
+
+/* ---------- 测量步骤 ---------- */
+.steps{margin:32px 0 20px;display:grid;gap:0;border-top:1px solid var(--line)}
+.step{display:grid;grid-template-columns:minmax(96px,150px) minmax(0,1fr);gap:clamp(14px,3vw,36px);padding:22px 0;border-bottom:1px solid var(--line)}
+.step__k{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-3);padding-top:5px}
+.step__b h4{margin:0 0 8px;font-size:15.5px;font-weight:750;letter-spacing:-.015em}
+.step__b p{margin:0;font-size:13.8px;line-height:1.8;color:var(--ink-2);text-wrap:pretty}
+.step__b ul{margin:10px 0 0;padding-left:18px;font-size:13.5px;line-height:1.8;color:var(--ink-2)}
+.step__b li{margin-bottom:4px}
+
+/* ---------- 结论 ---------- */
+.concl{padding:clamp(48px,7vw,86px) 0}
+.concl__q{
+  font-size:clamp(21px,3.4vw,33px);line-height:1.42;letter-spacing:-.02em;font-weight:700;margin:0;
+  max-width:24ch;text-wrap:balance;
+}
+.concl__b{margin-top:26px;display:grid;gap:14px;max-width:70ch}
+.concl__b p{margin:0;font-size:14.5px;line-height:1.85;color:var(--ink-2);text-wrap:pretty}
+
+/* ---------- 参考资料 ---------- */
+.refs{margin:32px 0 clamp(44px,6vw,68px);display:grid;gap:0;border-top:1px solid var(--line)}
+.ref{display:grid;grid-template-columns:34px minmax(0,1fr);gap:14px;padding:14px 0;border-bottom:1px solid var(--line);font-size:13.5px}
+.ref__n{font-family:var(--font-mono);font-size:11px;color:var(--ink-3);padding-top:3px;font-variant-numeric:tabular-nums}
+.ref__t{color:var(--ink);line-height:1.7}
+.ref__t span{display:block;color:var(--ink-3);font-size:12.5px;margin-top:2px}
+
+/* ---------- 页脚 ---------- */
+.foot{border-top:1px solid var(--ink);padding:34px 0 46px;background:var(--fill)}
+.foot__rev{margin:0;font-size:13px;line-height:1.8;color:var(--ink-2);max-width:88ch;text-wrap:pretty}
+.foot__rev .tag{margin-right:10px}
+.foot__src{margin:16px 0 0;font-family:var(--font-mono);font-size:11.5px;color:var(--ink-3);letter-spacing:.02em}
+
+/* ---------- 入场动画 ---------- */
+.rise{opacity:0;transform:translateY(14px)}
+.rise.in{opacity:1;transform:none;transition:opacity .6s ease,transform .6s cubic-bezier(.2,.7,.2,1)}
+.is-hidden{display:none !important}
+.flash{animation:flash .9s ease}
+@keyframes flash{0%{background:var(--fill-2)}100%{background:var(--bg)}}
+
+/* ---------- 响应式 ---------- */
+@media (max-width:900px){
+  .sec-head{grid-template-columns:1fr;gap:10px}
+  .hero__stats{grid-template-columns:repeat(2,1fr)}
+  .stat:nth-child(2){border-right:0}
+  .stat:nth-child(1),.stat:nth-child(2){border-bottom:1px solid var(--line)}
+  .ev-grid{grid-template-columns:1fr}
+  .tier{grid-template-columns:1fr;gap:18px}
+  .def{grid-template-columns:1fr}
+  .step{grid-template-columns:1fr;gap:8px}
+  .filters{top:53px}
+}
+@media (min-width:901px){
+  .ev-grid{grid-template-columns:repeat(2,1fr)}
+  .ev:nth-child(-n+2){border-top:0}
+}
+@media (max-width:620px){
+  .nav__name{display:none}
+  .item__btn{grid-template-columns:44px minmax(0,1fr);row-gap:10px}
+  .item__risk{grid-column:1 / -1;justify-content:flex-start}
+  .item__body{padding-bottom:20px}
+  .item__body .blk{border-left:0;padding-left:0;border-top:1px solid var(--line);padding-top:13px}
+  .item__body .blk:first-child{border-top:0;padding-top:0}
+  .grp__head{grid-template-columns:34px minmax(0,1fr);row-gap:8px}
+  .grp__c{grid-column:2}
+  .concl__q{max-width:none}
+}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001ms !important;transition-duration:.001ms !important}
+  .rise{opacity:1;transform:none}
+  .bar__fill{transition:none}
+}
+@media print{
+  .nav,.filters,.scan,.progress{display:none}
+  .item__body[hidden]{display:block !important}
+  body{font-size:11pt}
+}
+</style>
 </head>
 <body>
-  <h1>前端转向 AI Coding 的常见问题全景</h1>
-  <p>内容建设中，敬请期待…</p>
+<div class="scan" aria-hidden="true"></div>
+<div class="progress" id="progress" aria-hidden="true"></div>
+
+<header class="nav">
+  <a class="nav__mark" href="#top">
+    <span class="nav__glyph" aria-hidden="true">▚</span>
+    <span class="nav__name">AI&nbsp;Coding&nbsp;/&nbsp;前端风险全景</span>
+  </a>
+  <nav class="nav__links" aria-label="章节导航">
+    <a href="#evidence">数据底座</a>
+    <a href="#matrix">30 项检查</a>
+    <a href="#tiers">风险分层</a>
+    <a href="#defense">防御清单</a>
+    <a href="#measure">自测方法</a>
+    <a href="#refs">参考资料</a>
+  </nav>
+</header>
+
+<main id="top">
+<section class="hero" id="overview">
+  <div class="wrap">
+    <div class="hero__meta rise">
+      <span class="tag">初稿 2026-09-19</span>
+      <span class="tag">研究更新 2026-09-20</span>
+      <span class="tag tag--solid">风险识别 · 验收清单</span>
+      <span class="tag">Cursor / Claude Code / Copilot / Codex</span>
+    </div>
+
+    <h1 class="hero__title rise">前端转向 AI Coding<br><span class="thin">的常见问题全景</span></h1>
+
+    <p class="hero__sub rise">
+      AI 可以快速生成一个页面，但页面是否符合设计、交互是否完整、异常是否可恢复、后续是否有人能够维护，需要<b>不同的证据</b>来回答。把代码生成速度直接等同于交付效率，会漏掉验证、返工和维护成本。
+    </p>
+
+    <div class="hero__note rise">
+      <b>阅读口径</b> —— 文中研究数字仅描述各自样本；问题清单与验收优先级属于工程建议，<b>不代表行业发生概率</b>。本页是一份风险识别与验收清单，不是对所有前端项目的故障率预测。
+    </div>
+
+    <div class="hero__stats rise">
+      <div class="stat">
+        <div class="stat__v num" data-count="6">0</div>
+        <div class="stat__k">类问题域<br>视觉 · 运行时 · 代码质量 · 安全 · 协作 · 长期能力</div>
+      </div>
+      <div class="stat">
+        <div class="stat__v num" data-count="30">0</div>
+        <div class="stat__k">条具名风险<br>每条附「验收」动作，可直接进入评审流程</div>
+      </div>
+      <div class="stat">
+        <div class="stat__v num" data-count="6">0</div>
+        <div class="stat__k">项可核查研究<br>替换了原稿中没有出处的精确概率</div>
+      </div>
+      <div class="stat">
+        <div class="stat__v num" data-count="4">0</div>
+        <div class="stat__k">级风险分层<br>按业务后果排验收优先级，非统计排名</div>
+      </div>
+    </div>
+  </div>
+</section>
+<section id="evidence">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">§ 01 — Data&nbsp;Base</div>
+      <div>
+        <h2 class="sec-title rise">数据底座：研究测到了什么，<br>又没有测到什么</h2>
+        <p class="sec-lede rise">以下按与前端交付的相关性排列。发布日期不等于样本采集日期，报告名称中的年份也不代表使用了当年最新模型。<b>问卷态度、审计发现、实验基准和生产事故不能混为一谈。</b>每张卡片的「口径边界」是原文明确写出的限制，请连同数字一起读。</p>
+      </div>
+    </div>
+
+    <div class="ev-grid">
+
+      <article class="ev rise">
+        <div class="ev__top"><span class="ev__n">EV / 01</span><span class="ev__date">2026-07-24</span></div>
+        <h3 class="ev__src">Design Theater — 设计说明与实际实现存在落差</h3>
+        <p class="ev__claim">24 个任务 × 5 个生成式 UI 工具，共 120 个界面。为「声称完成不等于实际完成」提供直接证据。</p>
+        <div class="bars">
+          <div class="bar"><div class="bar__lb"><span>面向用户的设计说明未落实</span><b>&gt;25%</b></div><div class="bar__track"><span class="bar__fill" data-val="25"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>功能性要求未落实</span><b>34%</b></div><div class="bar__track"><span class="bar__fill" data-val="34"></span></div></div>
+        </div>
+        <p class="ev__limit"><b>口径边界</b> —— 限定任务与工具的评估，25% 的分母是<b>设计说明</b>，不是前端项目。不能据此推出视觉还原失败率、CSS 故障率，或所有当前模型的表现。本文引用该版本的摘要结果。</p>
+        <a class="ev__link" href="https://arxiv.org/abs/2607.22928v1" target="_blank" rel="noopener">研究原文 →</a>
+      </article>
+
+      <article class="ev rise">
+        <div class="ev__top"><span class="ev__n">EV / 02</span><span class="ev__date">2026-07 更新</span></div>
+        <h3 class="ev__src">designwithclaude — 截图之外的可用性问题</h3>
+        <p class="ev__claim">165 个自称 AI 生成的公开仓库中，筛出 123 个可分析的前端项目，按其确定性规则统计。</p>
+        <div class="bars">
+          <div class="bar"><div class="bar__lb"><span>存在「阻止发布」级严重错误</span><b>74%</b></div><div class="bar__track"><span class="bar__fill" data-val="74"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>严重无障碍错误</span><b>52%</b></div><div class="bar__track"><span class="bar__fill" data-val="52"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>表单输入缺少标签</span><b>49%</b></div><div class="bar__track"><span class="bar__fill" data-val="49"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>图标按钮缺少可访问名称</span><b>19%</b></div><div class="bar__track"><span class="bar__fill" data-val="19"></span></div></div>
+        </div>
+        <p class="ev__limit"><b>口径边界</b> —— 独立项目审计，样本偏向落地页、作品集和小型应用；没有人工编码对照组，不等同于完整的人工无障碍评估。「阻止发布」是审计工具的严重性分类，<b>不能写成「74% 已经发生生产事故」</b>。</p>
+        <a class="ev__link" href="https://www.designwithclaude.com/design-research/ai-generated-frontends" target="_blank" rel="noopener">审计结果与方法 →</a>
+      </article>
+
+      <article class="ev rise">
+        <div class="ev__top"><span class="ev__n">EV / 03</span><span class="ev__date">2026-07-03</span></div>
+        <h3 class="ev__src">Is Agentic Code Review Helpful? — 有意见，不等于有有效保护</h3>
+        <p class="ev__claim">239 个仓库、10,191 个 PR，31,073 对「审查意见 × 开发者反馈」。拒绝原因包括误报、重复、超出范围、不符合开发者意图。</p>
+        <div class="bars">
+          <div class="bar"><div class="bar__lb"><span>被接受</span><b>36.4%</b></div><div class="bar__track"><span class="bar__fill" data-val="36.4"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>引发讨论</span><b>7.3%</b></div><div class="bar__track"><span class="bar__fill" data-val="7.3"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>被拒绝</span><b>56.3%</b></div><div class="bar__track"><span class="bar__fill" data-val="56.3"></span></div></div>
+        </div>
+        <p class="ev__limit"><b>口径边界</b> —— 针对 CodeRabbit 的反馈样本，不能代表全部审查意见或全部产品。<b>「被拒绝」也不等于技术上错误。</b>它提示团队应检查审查意见的有效性与噪声成本，不能把「接入 reviewer」当作质量保证。</p>
+        <a class="ev__link" href="https://arxiv.org/abs/2607.03316" target="_blank" rel="noopener">研究原文 →</a>
+      </article>
+
+      <article class="ev rise">
+        <div class="ev__top"><span class="ev__n">EV / 04</span><span class="ev__date">2026-08-21</span></div>
+        <h3 class="ev__src">AI-to-AI Code Reviews — 流程规模不等于质量收益</h3>
+        <p class="ev__claim">考察同产品与跨产品审查。论文描述了审查活动与输出差异，<b>未证明跨产品审查能降低生产缺陷</b>。</p>
+        <div class="bars">
+          <div class="bar"><div class="bar__lb"><span>样本：至少接受过一次 AI 审查的 AI 归因 PR</span><b class="num" style="font-size:15px;letter-spacing:-.02em">248,641</b></div></div>
+          <div style="border-top:1px solid var(--line);padding-top:11px;font-size:12.5px;color:var(--ink-3);line-height:1.6">该项研究<b style="color:var(--ink-2)">未给出可比的比率型结论</b>，因此本卡不绘比例条——只呈样本规模与研究结论方向。</div>
+        </div>
+        <p class="ev__limit"><b>口径边界</b> —— 上条为<b>样本规模</b>而非比率，故不绘成比例条。这是新近发布的研究，但其中增长趋势涉及 <b>2025 年</b>的数据，不能当成 2026 年最新模型的效果测试。适合作为工程流程变化的证据，而不是「让另一个模型复核就更安全」的依据。</p>
+        <a class="ev__link" href="https://arxiv.org/abs/2608.21311" target="_blank" rel="noopener">研究原文 →</a>
+      </article>
+
+      <article class="ev rise">
+        <div class="ev__top"><span class="ev__n">EV / 05</span><span class="ev__date">2026-01-08</span></div>
+        <h3 class="ev__src">Sonar《2026 State of Code》— 验证成本成为独立问题</h3>
+        <p class="ev__claim">覆盖 1,100 多名专业开发者的自报问卷。</p>
+        <div class="bars">
+          <div class="bar"><div class="bar__lb"><span>提交代码由 AI 生成或辅助</span><b>42%</b></div><div class="bar__track"><span class="bar__fill" data-val="42"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>并非完全信任 AI 代码</span><b>96%</b></div><div class="bar__track"><span class="bar__fill" data-val="96"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>总是在提交前验证</span><b>48%</b></div><div class="bar__track"><span class="bar__fill" data-val="48"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>认为审查 AI 代码比审查同事代码更费力</span><b>38%</b></div><div class="bar__track"><span class="bar__fill" data-val="38"></span></div></div>
+        </div>
+        <p class="ev__limit"><b>口径边界</b> —— 厂商组织的<b>自报问卷</b>结果，不是直接测得的代码缺陷率。「并非完全信任」不等于完全不信任，「未总是验证」不等于从不验证。它支持关注验证负担，但不能单独证明净生产率下降。</p>
+        <a class="ev__link" href="https://www.sonarsource.com/blog/state-of-code-developer-survey-report-the-current-reality-of-ai-coding/" target="_blank" rel="noopener">官方调查解读 →</a>
+      </article>
+
+      <article class="ev rise">
+        <div class="ev__top"><span class="ev__n">EV / 06</span><span class="ev__date">2025-12-17</span></div>
+        <h3 class="ev__src">CodeRabbit PR 质量对比 — 异常处理值得重点检查</h3>
+        <p class="ev__claim">320 个 AI 协作 PR vs 150 个被识别为人工编写的 PR。每 PR 问题数均值 <b class="num">10.83</b> 对 <b class="num">6.45</b>。<span style="color:var(--ink-3);font-size:12.5px">下图条长以「人工 = 1×」为基线，表示相对倍数，非百分比。</span></p>
+        <div class="bars">
+          <div class="bar"><div class="bar__lb"><span>每 PR 问题总数</span><b>≈1.7×</b></div><div class="bar__track"><span class="bar__fill" data-val="85" data-ratio="1"></span></div></div>
+          <div class="bar bar--alt"><div class="bar__lb"><span>逻辑与正确性问题</span><b>≈1.75×</b></div><div class="bar__track"><span class="bar__fill" data-val="87.5"></span></div></div>
+          <div class="bar"><div class="bar__lb"><span>错误处理与异常路径缺失</span><b>≈2×</b></div><div class="bar__track"><span class="bar__fill" data-val="100"></span></div></div>
+        </div>
+        <p class="ev__limit"><b>口径边界</b> —— 统计的是<b>审查问题</b>，不是全部经确认的生产 bug；按 PR 归一化不等于控制了代码量和任务难度，作者身份识别也可能出错。原稿将「2.74 倍」归入 Uplevel 总体缺陷数据属引用不准确；可核查的 CodeRabbit 页面将其用于<b>安全问题</b>的表述。</p>
+        <a class="ev__link" href="https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report" target="_blank" rel="noopener">报告解读及局限 →</a>
+      </article>
+
+    </div>
+
+    <p class="evidence-note rise">
+      <b>如何使用这些证据</b> —— 这些研究不能合并成一个统一的「AI 前端失败概率」。DORA 2025 的官方概括更适合作为组织层面的背景：<b>AI 会放大组织已有的优势与弱点，收益取决于支撑它的工作系统</b>（<a href="https://dora.dev/research/2025/dora-report/" target="_blank" rel="noopener">DORA 官方报告页</a>）。下文除明确关联研究的条目外，均作为<b>需要在本团队验证的工程风险</b>；同类问题也会发生在人类编写的代码中，是否因 AI 使用而增加，需要对照或持续观测。
+    </p>
+  </div>
+</section>
+<section id="matrix">
+  <div class="wrap wrap--wide">
+    <div class="sec-head">
+      <div class="sec-id">§ 02 — Risk&nbsp;Matrix</div>
+      <div>
+        <h2 class="sec-title rise">六类问题域 · 30 条具名风险</h2>
+        <p class="sec-lede rise">每条包含「风险描述」与「验收动作」两部分——验收动作可直接搬进评审 checklist。点击任意一行展开，或按风险层级筛选。宽屏下两块左右并列。带 <span class="cite mono" style="font-size:11.5px">EV/xx</span> 引用的条目对应上方研究，其余均为<b>需要在本团队验证的工程风险</b>。</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap wrap--wide">
+    <div class="filters" role="group" aria-label="按风险层级筛选">
+      <span class="filters__lb">Filter</span>
+      <button class="chip" data-filter="all" aria-pressed="true">全部<span class="chip__c">30</span></button>
+      <button class="chip" data-filter="p0" aria-pressed="false">发布阻断<span class="chip__c">5</span></button>
+      <button class="chip" data-filter="p1" aria-pressed="false">核心流程必须通过<span class="chip__c">9</span></button>
+      <button class="chip" data-filter="p2" aria-pressed="false">纳入质量预算<span class="chip__c">11</span></button>
+      <button class="chip" data-filter="p3" aria-pressed="false">持续监测<span class="chip__c">5</span></button>
+      <span class="filters__count" id="fcount" aria-live="polite">显示 30 / 30</span>
+    </div>
+
+    <div class="matrix" id="matrixRoot">
+
+      <!-- ============ A 视觉与 UI 层 ============ -->
+      <section class="grp" data-group>
+        <div class="grp__head">
+          <span class="grp__k">A</span>
+          <h3 class="grp__t">视觉与 UI 层<span class="grp__d">Visual &amp; UI</span></h3>
+          <span class="grp__c">7 项</span>
+        </div>
+
+        <div class="item" data-tier="p2" id="A1">
+          <button class="item__btn" aria-expanded="false" aria-controls="A1b">
+            <span class="item__id">A1</span>
+            <span class="item__name">视觉还原偏差</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A1b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>布局、间距、字号、颜色、图片裁切与设计稿不一致。单张截图通过，也不能保证长内容、字体加载后或其他视口下仍然正确。当前证据不足以给出统一的「85% 失败率」或「偏差 10%–30%」。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>提供设计稿、设计 token、已有组件与关键尺寸；比较实际浏览器截图，标记差异，再复查修改后的页面。使用视觉输入的模型仍需要明确的参照和检查步骤，不能把问题笼统归因于「LLM 没有视觉能力」。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="A2">
+          <button class="item__btn" aria-expanded="false" aria-controls="A2b">
+            <span class="item__id">A2</span>
+            <span class="item__name">CSS 覆盖累积与样式耦合</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A2b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>修复一个页面时追加选择器、内联覆盖和重复样式，可能破坏共享组件或让后续修改越来越难预测。<code>!important</code> 的存在本身并不证明代码有问题，应检查其必要性和影响范围。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>遵循现有样式组织方式，定位最终生效规则；共享样式变更后检查使用方。CSS Modules、Tailwind 或其他方案都需要配套约束，选型本身不能保证维护性。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="A3">
+          <button class="item__btn" aria-expanded="false" aria-controls="A3b">
+            <span class="item__id">A3</span>
+            <span class="item__name">响应式与移动端适配不完整</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A3b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>固定宽度、长文本、软键盘、安全区域、横屏和触控操作可能暴露桌面预览看不到的问题。断点数量不是质量指标，内容在断点之间能否连续适配更重要。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>明确目标设备与浏览器，检查代表性视口、长内容和关键触控流程；重要移动端路径做真机验证。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="A4">
+          <button class="item__btn" aria-expanded="false" aria-controls="A4b">
+            <span class="item__id">A4</span>
+            <span class="item__name">交互状态与异常反馈缺失</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A4b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>默认状态有了，加载、空态、错误、禁用、键盘焦点、重复提交或返回恢复却没有完成。Design Theater 的功能性要求落差与这一风险有关，但不能转换为此条目的行业发生率。<br><span class="cite">关联 <a href="https://arxiv.org/abs/2607.22928v1" target="_blank" rel="noopener">EV/01 研究原文 →</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>按用户任务列出状态与转换条件，实际走完成功、失败、重试和取消路径。<b>验证按钮产生的结果，而不仅是按钮是否显示。</b></p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="A5">
+          <button class="item__btn" aria-expanded="false" aria-controls="A5b">
+            <span class="item__id">A5</span>
+            <span class="item__name">设计系统碎片化</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A5b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>同一产品出现多个近似 Button、Dialog 和表单实现，设计 token 与组件行为逐渐分裂。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>生成前搜索现有组件，提供可运行的使用示例；评审新增组件是否确有必要。对可机器判断的导入、token 和组件使用约束，增加自动检查。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="A6">
+          <button class="item__btn" aria-expanded="false" aria-controls="A6b">
+            <span class="item__id">A6</span>
+            <span class="item__name">无障碍缺失：视觉正确之外的可用性</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A6b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>表单没有标签、图标按钮没有可访问名称、焦点难以辨认、弹窗无法通过键盘完成操作，都会让部分用户无法使用产品。前述项目审计提供了有限样本中的结构性问题证据。<br><span class="cite">关联 <a href="https://www.designwithclaude.com/design-research/ai-generated-frontends" target="_blank" rel="noopener">EV/02 审计原文 →</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>自动扫描结合键盘操作、焦点顺序、屏幕阅读器关键流程和减少动态效果偏好检查。<b>自动化工具不能覆盖全部可用性问题，也不能仅凭工具分数宣布无障碍验收完成。</b></p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="A7">
+          <button class="item__btn" aria-expanded="false" aria-controls="A7b">
+            <span class="item__id">A7</span>
+            <span class="item__name">完成报告失真</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="A7b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>Agent 声称「已实现响应式」「已处理异常」「已通过验证」，实际产物却缺少相应行为，或者根本没有运行相应检查。Design Theater 直接测量了设计说明与实现之间的落差；对其他完成声明，应由团队另行采样验证。<br><span class="cite">关联 <a href="https://arxiv.org/abs/2607.22928v1" target="_blank" rel="noopener">EV/01 研究原文 →</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>将每项要求映射到实现位置、操作步骤和可复查结果；明确区分<b>已实现、已运行验证、尚未验证</b>。自然语言总结不能代替产物证据。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ B 浏览器与运行时 ============ -->
+      <section class="grp" data-group>
+        <div class="grp__head">
+          <span class="grp__k">B</span>
+          <h3 class="grp__t">浏览器与运行时<span class="grp__d">Browser &amp; Runtime</span></h3>
+          <span class="grp__c">4 项</span>
+        </div>
+
+        <div class="item" data-tier="p1" id="B1">
+          <button class="item__btn" aria-expanded="false" aria-controls="B1b">
+            <span class="item__id">B1</span>
+            <span class="item__name">目标浏览器覆盖不足</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="B1b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>只在一个桌面浏览器预览，无法证明目标 Safari、WebView 或旧版企业浏览器可用。兼容性需要依据具体版本判断，不能长期沿用某个 CSS 属性「一定不兼容」的固定清单。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>记录最低支持版本，对关键流程执行浏览器矩阵检查；采用新能力前核对当前支持情况及回退方案。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="B2">
+          <button class="item__btn" aria-expanded="false" aria-controls="B2b">
+            <span class="item__id">B2</span>
+            <span class="item__name">Hydration 不匹配</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="B2b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>SSR 项目的服务端输出与客户端首次渲染不同，可能导致恢复渲染、性能损失或交互问题。时间、随机值、浏览器专有 API 和两端数据不一致都是排查方向。React 官方要求将不匹配视为需要修复的错误。<br><span class="cite">关联 <a href="https://react.dev/reference/react-dom/client/hydrateRoot" target="_blank" rel="noopener">React 文档 →</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>检查首屏数据和执行边界，复现并修复 hydration 报错；<b>不要把隐藏警告当作修复</b>，也不要把所有逻辑移入 Effect 作为通用方案。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="B3">
+          <button class="item__btn" aria-expanded="false" aria-controls="B3b">
+            <span class="item__id">B3</span>
+            <span class="item__name">性能回归</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="B3b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>依赖体积、重复请求、不必要的渲染、长任务和图片策略可能使可运行页面变得迟缓。<b>没有使用 memo 或没有为所有图片加懒加载，不应直接判为缺陷。</b></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>以代表性设备、网络和任务测量性能；比较构建体积与关键交互的前后变化，再针对瓶颈优化。预算应来自产品需求，而不是追求孤立的评分。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="B4">
+          <button class="item__btn" aria-expanded="false" aria-controls="B4b">
+            <span class="item__id">B4</span>
+            <span class="item__name">状态管理与异步竞态</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="B4b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>同一事实被复制到多个 state、旧请求覆盖新请求、卸载后资源未清理，都可能导致难以复现的界面错误。<b>增加状态管理库并不能自动解决这些问题。</b></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>明确状态来源与所有者，区分本地交互状态、URL 状态和服务端数据；测试快速切换、请求乱序、重复操作与返回恢复。能从现有数据推导的值，避免通过 Effect 再维护一份副本。<br><span class="cite">参考 <a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noopener">React 指南 →</a></span></p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ C 代码质量与正确性 ============ -->
+      <section class="grp" data-group>
+        <div class="grp__head">
+          <span class="grp__k">C</span>
+          <h3 class="grp__t">代码质量与正确性<span class="grp__d">Code Quality &amp; Correctness</span></h3>
+          <span class="grp__c">6 项</span>
+        </div>
+
+        <div class="item" data-tier="p1" id="C1">
+          <button class="item__btn" aria-expanded="false" aria-controls="C1b">
+            <span class="item__id">C1</span>
+            <span class="item__name">修复引入回归</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="C1b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>局部修复可能改变共享组件、工具函数或数据契约，影响未进入当前任务视野的调用方。某类抗回归工具的出现只能说明存在需求，不能证明问题的普及率。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>先复现问题，再搜索受影响调用方；为关键行为保留回归检查。<b>验证范围随改动影响扩大</b>，而不是只看当前页面或当前报错是否消失。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="C2">
+          <button class="item__btn" aria-expanded="false" aria-controls="C2b">
+            <span class="item__id">C2</span>
+            <span class="item__name">重复逻辑与复用失衡</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="C2b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>同一业务规则被多次实现，后续修改容易遗漏；反过来，<b>过早抽象也可能增加耦合</b>。原稿的重复率数字缺少直接对应的来源，本次不再沿用。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>生成前搜索相似实现，评审业务规则是否需要统一；重复检测作为线索，不机械地追求零重复。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="C3">
+          <button class="item__btn" aria-expanded="false" aria-controls="C3b">
+            <span class="item__id">C3</span>
+            <span class="item__name">框架 API 与版本错配</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="C3b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>使用不适用于当前项目版本、路由模式或运行环境的 API，即使代码表面合理，也可能无法构建或无法按预期执行。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>读取实际依赖版本与锁文件，参考匹配版本的官方文档，运行类型检查、构建和相关路径验证。不能仅凭「旧写法」判断错误，也不能假设类型检查能发现所有运行时问题。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="C4">
+          <button class="item__btn" aria-expanded="false" aria-controls="C4b">
+            <span class="item__id">C4</span>
+            <span class="item__name">类型检查被绕过</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="C4b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>用 <code>any</code>、不安全断言、忽略诊断等手段消除报错，可能让接口与实现的不一致继续存在。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>检查新增类型逃逸的理由，按项目需要约束其使用；对外部输入和接口边界<b>验证运行时数据</b>，而不是仅依赖静态类型。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="C5">
+          <button class="item__btn" aria-expanded="false" aria-controls="C5b">
+            <span class="item__id">C5</span>
+            <span class="item__name">测试存在，但没有保护关键行为</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="C5b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>测试可能只重复实现细节，遗漏错误路径；也可能由 Agent 修改预期，使错误实现重新变绿。<b>覆盖率高并不直接证明测试有效。</b></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>从需求和已知故障推导断言，确认关键错误出现时测试确实失败；必要时对高风险逻辑采用变异测试。测试与实现可以由同一工具生成，但仍需独立检查验收目标。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p0" id="C6">
+          <button class="item__btn" aria-expanded="false" aria-controls="C6b">
+            <span class="item__id">C6</span>
+            <span class="item__name">边界条件与错误处理缺失</span>
+            <span class="item__risk"><span class="pill pill--p0">发布阻断</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="C6b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>成功路径可用，不代表空数据、长文本、断网、权限失效、服务端错误和并发操作下仍然可恢复。CodeRabbit 样本中的异常路径差异支持<b>优先检查</b>这一类问题，不能支持原稿「85%」的概率。<br><span class="cite">关联 <a href="https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report" target="_blank" rel="noopener">EV/06 报告原文 →</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>按<b>输入、网络、权限、并发</b>四类列出相关边界；检查错误反馈、重试、数据保留和操作幂等性，具体深度取决于业务后果。涉及关键交易时按「发布阻断」处理。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+      <!-- ============ D 安全与供应链 ============ -->
+      <section class="grp" data-group>
+        <div class="grp__head">
+          <span class="grp__k">D</span>
+          <h3 class="grp__t">安全与供应链<span class="grp__d">Security &amp; Supply Chain</span></h3>
+          <span class="grp__c">4 项</span>
+        </div>
+
+        <div class="item" data-tier="p0" id="D1">
+          <button class="item__btn" aria-expanded="false" aria-controls="D1b">
+            <span class="item__id">D1</span>
+            <span class="item__name">不可信内容进入危险渲染位置</span>
+            <span class="item__risk"><span class="pill pill--p0">发布阻断</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="D1b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>富文本或 HTML 渲染没有正确处理不可信输入，可能产生 XSS。<b>不能用禁用某个 API、依赖扫描或一条 CSP 配置替代完整的数据流检查。</b></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>优先使用安全输出方式，确需 HTML 时采用经过审查的净化方案；按输出上下文处理编码，CSP 作为补充防线。<br><span class="cite">参考 <a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP XSS 指南 →</a></span></p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p0" id="D2">
+          <button class="item__btn" aria-expanded="false" aria-controls="D2b">
+            <span class="item__id">D2</span>
+            <span class="item__name">依赖膨胀、错误包名与供应链风险</span>
+            <span class="item__risk"><span class="pill pill--p0">发布阻断</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="D2b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>Agent 可能引入不必要的依赖，或给出错误、不存在的包名。不存在的包名被恶意注册的风险通常称为 <b>slopsquatting</b>，与利用拼写错误的 typosquatting 应区分。本次不保留原稿未核实的投毒事件数量或发生率。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>核实包的来源、维护者和必要性，审查新增依赖、锁文件与安装脚本。<b>包存在、能安装或有完整性校验，不等于包可信</b>；体积问题与恶意依赖问题也应分开处理。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p0" id="D3">
+          <button class="item__btn" aria-expanded="false" aria-controls="D3b">
+            <span class="item__id">D3</span>
+            <span class="item__name">私密凭据进入客户端或仓库</span>
+            <span class="item__risk"><span class="pill pill--p0">发布阻断</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="D3b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>服务端私密密钥、长期令牌进入前端产物、日志或提交历史，可能扩大访问范围。需要区分<b>私密凭据</b>与<b>设计上允许公开的客户端标识</b>。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>检查配置如何进入构建产物，使用密钥扫描，控制运行时凭据范围；真实泄露后按事件处理并撤销或轮换凭据，<b>仅删除当前文件不够</b>。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p0" id="D4">
+          <button class="item__btn" aria-expanded="false" aria-controls="D4b">
+            <span class="item__id">D4</span>
+            <span class="item__name">外部内容中的间接提示注入</span>
+            <span class="item__risk"><span class="pill pill--p0">发布阻断</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="D4b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>网页、README、issue 或工具输出中的文字可能诱导 Agent 执行偏离任务的操作。来源白名单有帮助，但<b>「看起来可信」的来源也可能包含不可信内容</b>。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>将外部材料作为数据处理，限制工具、凭据、网络和写入范围；高影响操作使用可执行的权限控制，检查敏感输出与异常行为。不能仅靠提示词隔离解决全部问题。<br><span class="cite">参考 <a href="https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP 提示注入指南 →</a></span></p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ E 工程流程与协作 ============ -->
+      <section class="grp" data-group>
+        <div class="grp__head">
+          <span class="grp__k">E</span>
+          <h3 class="grp__t">工程流程与协作<span class="grp__d">Process &amp; Collaboration</span></h3>
+          <span class="grp__c">5 项</span>
+        </div>
+
+        <div class="item" data-tier="p2" id="E1">
+          <button class="item__btn" aria-expanded="false" aria-controls="E1b">
+            <span class="item__id">E1</span>
+            <span class="item__name">改动超出可审查范围</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="E1b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>功能、重构、格式化与依赖更新混在一起，会增加审查负担。固定行数只能作为提醒，<b>不应替代对语义复杂度和影响范围的判断</b>。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>按可独立验证的目标拆分提交，说明行为变化和验证方式；对生成文件、锁文件与业务逻辑采用不同的审查重点。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="E2">
+          <button class="item__btn" aria-expanded="false" aria-controls="E2b">
+            <span class="item__id">E2</span>
+            <span class="item__name">大库全局一致性漂移</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="E2b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>即使上下文窗口足够长，也不意味着 Agent 找到了并正确使用所有相关约束。命名、目录、错误处理和数据访问模式可能逐步偏离现有架构。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>维护可检索的架构说明、组件目录和范例；将可判定的规则落到 lint、依赖边界或构建检查中，并检查跨模块变更。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p2" id="E3">
+          <button class="item__btn" aria-expanded="false" aria-controls="E3b">
+            <span class="item__id">E3</span>
+            <span class="item__name">技术债与验证积压</span>
+            <span class="item__risk"><span class="pill pill--p2">质量预算</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="E3b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>生成速度提高后，如果审查和修复能力没有同步提升，未验证变更和临时实现可能积压。DORA 的组织放大器视角与 Sonar 的验证负担调查，为检查这一瓶颈提供背景，<b>不能据此断言所有团队的技术债都在增加</b>。<br><span class="cite">关联 <a href="https://dora.dev/research/2025/dora-report/" target="_blank" rel="noopener">EV·DORA</a> · <a href="https://www.sonarsource.com/blog/state-of-code-developer-survey-report-the-current-reality-of-ai-coding/" target="_blank" rel="noopener">EV/05 Sonar</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>同时跟踪开发耗时、等待审查、返工和上线缺陷；给临时方案指定负责人和处理条件，<b>而不是只记录代码产量</b>。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p3" id="E4">
+          <button class="item__btn" aria-expanded="false" aria-controls="E4b">
+            <span class="item__id">E4</span>
+            <span class="item__name">Agent 反复尝试但不收敛</span>
+            <span class="item__risk"><span class="pill pill--p3">持续监测</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="E4b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>重复相同修复、扩大无关改动或持续探索，可能消耗时间与调用预算，却没有增加有效信息。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>配置任务预算、超时和停止条件；连续失败时要求汇总<b>已排除假设与缺失信息</b>，转人工处理或重新拆分任务。阈值应按任务复杂度设置。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p1" id="E5">
+          <button class="item__btn" aria-expanded="false" aria-controls="E5b">
+            <span class="item__id">E5</span>
+            <span class="item__name">AI 审查的噪声与错误放行</span>
+            <span class="item__risk"><span class="pill pill--p1">核心流程</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="E5b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>AI 审查既可能提出有效意见，也可能重复、误报、超出范围或漏掉关键问题。<b>审查意见数量不能作为发现缺陷能力的直接指标。</b><br><span class="cite">关联 <a href="https://arxiv.org/abs/2607.03316" target="_blank" rel="noopener">EV/03 反馈研究</a> · <a href="https://arxiv.org/abs/2608.21311" target="_blank" rel="noopener">EV/04 AI-to-AI</a></span></p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>抽样评估意见有效性、遗漏、重复和处理成本；对自动批准与高影响改动设置不同门槛。换产品或换模型可以作为待评估的策略，<b>不能假设它们的错误彼此独立</b>。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ F 个人与团队长期能力 ============ -->
+      <section class="grp" data-group>
+        <div class="grp__head">
+          <span class="grp__k">F</span>
+          <h3 class="grp__t">个人与团队长期能力<span class="grp__d">Long-term Capability</span></h3>
+          <span class="grp__c">4 项</span>
+        </div>
+
+        <div class="item" data-tier="p3" id="F1">
+          <button class="item__btn" aria-expanded="false" aria-controls="F1b">
+            <span class="item__id">F1</span>
+            <span class="item__name">技能保持与学习方式变化</span>
+            <span class="item__risk"><span class="pill pill--p3">持续监测</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="F1b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>长期委托可能减少直接练习机会，但本文所引研究<b>不足以证明</b>「使用三个月就明显退化」或「长期概率 80%+」。技能变化还与使用方式、原有能力和任务类型有关。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>通过解释代码、定位故障、独立完成关键任务等方式观察能力；针对薄弱环节安排练习，<b>而不是用工具使用时长推断退化</b>。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p3" id="F2">
+          <button class="item__btn" aria-expanded="false" aria-controls="F2b">
+            <span class="item__id">F2</span>
+            <span class="item__name">理解债：没有人能解释或修复产物</span>
+            <span class="item__risk"><span class="pill pill--p3">持续监测</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="F2b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>代码被合入，但无人能说明核心数据流、约束和失败路径，后续处理问题时就容易依赖反复生成与试错。这是<b>需要管理的责任与可维护性风险</b>，不是已测得的统一概率。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>关键模块明确负责人，保留决策理由、运行说明和排障路径；是否准许自动合入，应依据风险与验证能力，<b>而不是仅依据代码由谁生成</b>。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p3" id="F3">
+          <button class="item__btn" aria-expanded="false" aria-controls="F3b">
+            <span class="item__id">F3</span>
+            <span class="item__name">高估开发收益、低估总成本</span>
+            <span class="item__risk"><span class="pill pill--p3">持续监测</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="F3b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>原型生成快，并不直接代表从需求到稳定交付的总成本降低。原稿引用的「43,000 美元重构、11,000 美元 MRR」案例<b>缺少可核查出处，本次删除</b>。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>将实现、审查、返工、调用费用与后续维护放在<b>同一口径</b>下比较；记录收益和成本，避免只统计节省的输入时间。</p></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="item" data-tier="p3" id="F4">
+          <button class="item__btn" aria-expanded="false" aria-controls="F4b">
+            <span class="item__id">F4</span>
+            <span class="item__name">原型向生产移交缺少契约</span>
+            <span class="item__risk"><span class="pill pill--p3">持续监测</span><span class="item__toggle" aria-hidden="true">›</span></span>
+          </button>
+          <div class="item__body" id="F4b" hidden>
+            <div class="item__col">
+              <div class="blk"><div class="blk__lb">风险</div><p>非工程角色快速生成原型后，如果功能边界、数据来源、权限和维护责任不清楚，工程团队会承担额外识别与改造成本。</p></div>
+              <div class="blk blk--ok"><div class="blk__lb">验收</div><p>建立原型交接清单，标明<b>真实功能、模拟数据和未验证部分</b>；评估可保留、需改造和需重建的模块，不以代码行数或生成工具直接决定是否重写。</p></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <p class="empty mono is-hidden" id="empty" style="padding:32px 20px;color:var(--ink-3);font-size:13px;border-bottom:1px solid var(--line)">— 当前筛选下无匹配项 —</p>
+    </div>
+  </div>
+</section>
+<section id="tiers">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">§ 03 — Triage</div>
+      <div>
+        <h2 class="sec-title rise">风险分层：按业务后果确定验收优先级</h2>
+        <p class="sec-lede rise">以下是<b>建议的处理顺序，不是统计排名</b>。团队应结合数据敏感性、影响人数、可恢复性与已有控制调整。点击任意编号可跳到上方矩阵中对应条目。</p>
+      </div>
+    </div>
+
+    <div class="tiers">
+      <article class="tier tier--lead rise">
+        <div class="tier__l">
+          <span class="tier__n">TIER 01</span>
+          <h3 class="tier__t">发布阻断</h3>
+          <p class="tier__d"><b>触发条件</b>：可能泄露私密数据、造成越权，或使核心业务不可恢复。</p>
+        </div>
+        <div class="tier__r">
+          <div>
+            <div class="tier__lb">对应问题</div>
+            <div class="tier__ids" style="margin-top:9px">
+              <button class="pill pill--p1" data-jump="D1">D1</button>
+              <button class="pill pill--p1" data-jump="D2">D2 · 恶意依赖</button>
+              <button class="pill pill--p1" data-jump="D3">D3</button>
+              <button class="pill pill--p1" data-jump="D4">D4</button>
+              <button class="pill pill--p1" data-jump="C6">C6 · 关键交易</button>
+            </div>
+          </div>
+          <p class="tier__focus"><span class="tier__lb">验收重点</span><br>权限边界、输入输出安全、恢复路径与必要的人工批准。</p>
+        </div>
+      </article>
+
+      <article class="tier rise">
+        <div class="tier__l">
+          <span class="tier__n">TIER 02</span>
+          <h3 class="tier__t">核心流程必须通过</h3>
+          <p class="tier__d"><b>触发条件</b>：用户无法完成主要任务，或关键变更无法证明正确。</p>
+        </div>
+        <div class="tier__r">
+          <div>
+            <div class="tier__lb">对应问题</div>
+            <div class="tier__ids" style="margin-top:9px">
+              <button class="pill pill--p2" data-jump="A4">A4</button>
+              <button class="pill pill--p2" data-jump="A6">A6</button>
+              <button class="pill pill--p2" data-jump="A7">A7</button>
+              <button class="pill pill--p2" data-jump="B1">B1</button>
+              <button class="pill pill--p2" data-jump="B2">B2</button>
+              <button class="pill pill--p2" data-jump="B4">B4</button>
+              <button class="pill pill--p2" data-jump="C1">C1</button>
+              <button class="pill pill--p2" data-jump="C5">C5</button>
+              <button class="pill pill--p2" data-jump="E5">E5</button>
+            </div>
+          </div>
+          <p class="tier__focus"><span class="tier__lb">验收重点</span><br>实际操作、行为测试、兼容与无障碍检查、审查证据。</p>
+        </div>
+      </article>
+
+      <article class="tier rise">
+        <div class="tier__l">
+          <span class="tier__n">TIER 03</span>
+          <h3 class="tier__t">纳入明确质量预算</h3>
+          <p class="tier__d"><b>触发条件</b>：影响视觉、性能或持续维护能力。</p>
+        </div>
+        <div class="tier__r">
+          <div>
+            <div class="tier__lb">对应问题</div>
+            <div class="tier__ids" style="margin-top:9px">
+              <button class="pill pill--p2" data-jump="A1">A1</button>
+              <button class="pill pill--p2" data-jump="A2">A2</button>
+              <button class="pill pill--p2" data-jump="A3">A3</button>
+              <button class="pill pill--p2" data-jump="A5">A5</button>
+              <button class="pill pill--p2" data-jump="B3">B3</button>
+              <button class="pill pill--p2" data-jump="C2">C2</button>
+              <button class="pill pill--p2" data-jump="C3">C3</button>
+              <button class="pill pill--p2" data-jump="C4">C4</button>
+              <button class="pill pill--p2" data-jump="E1">E1</button>
+              <button class="pill pill--p2" data-jump="E2">E2</button>
+              <button class="pill pill--p2" data-jump="E3">E3</button>
+            </div>
+          </div>
+          <p class="tier__focus"><span class="tier__lb">验收重点</span><br>设计标准、性能预算、类型与架构约束。</p>
+        </div>
+      </article>
+
+      <article class="tier rise">
+        <div class="tier__l">
+          <span class="tier__n">TIER 04</span>
+          <h3 class="tier__t">持续监测与改进</h3>
+          <p class="tier__d"><b>触发条件</b>：成本、能力或协作问题逐步累积。</p>
+        </div>
+        <div class="tier__r">
+          <div>
+            <div class="tier__lb">对应问题</div>
+            <div class="tier__ids" style="margin-top:9px">
+              <button class="pill pill--p3" data-jump="E4">E4</button>
+              <button class="pill pill--p3" data-jump="F1">F1</button>
+              <button class="pill pill--p3" data-jump="F2">F2</button>
+              <button class="pill pill--p3" data-jump="F3">F3</button>
+              <button class="pill pill--p3" data-jump="F4">F4</button>
+            </div>
+          </div>
+          <p class="tier__focus"><span class="tier__lb">验收重点</span><br>成本记录、能力观察、责任与交接机制。</p>
+        </div>
+      </article>
+    </div>
+
+    <p class="tiers__note rise"><b>同一个问题可能跨层级。</b>例如，活动页的间距偏差与药品剂量界面的文字截断，后果不同；提示注入与恶意依赖也不能因为发生率未知，就归入低危害。</p>
+  </div>
+</section>
+<section id="defense">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">§ 04 — Defense</div>
+      <div>
+        <h2 class="sec-title rise">十条可执行的防御清单</h2>
+        <p class="sec-lede rise">把上面 30 条风险压缩成日常可以直接照做的十件事。每一条都对应可观察的动作，而不是态度表态。</p>
+      </div>
+    </div>
+
+    <div class="def">
+      <article class="def__i rise"><span class="def__n">01</span><div><h4 class="def__t">先定义可观察的完成条件</h4><p class="def__d">将需求映射到界面行为、边界场景和验证方式。</p></div></article>
+      <article class="def__i rise"><span class="def__n">02</span><div><h4 class="def__t">提供项目真实上下文</h4><p class="def__d">包括实际版本、设计 token、现有组件、接口契约和架构约束。</p></div></article>
+      <article class="def__i rise"><span class="def__n">03</span><div><h4 class="def__t">要求证据对应当前产物</h4><p class="def__d">完成报告区分已实现、已验证和未验证，避免把旧结果用于新改动。</p></div></article>
+      <article class="def__i rise"><span class="def__n">04</span><div><h4 class="def__t">用多种检查覆盖不同风险</h4><p class="def__d">类型、静态分析、行为测试、视觉检查、无障碍和性能检查各有边界；测试不是唯一防线。</p></div></article>
+      <article class="def__i rise"><span class="def__n">05</span><div><h4 class="def__t">优先检查异常与恢复</h4><p class="def__d">让关键流程在断网、权限失效、服务错误和重复操作下仍有明确结果。</p></div></article>
+      <article class="def__i rise"><span class="def__n">06</span><div><h4 class="def__t">控制改动范围</h4><p class="def__d">按可独立验证的目标拆分，修改共享代码时检查受影响调用方。</p></div></article>
+      <article class="def__i rise"><span class="def__n">07</span><div><h4 class="def__t">把约束变成可执行规则</h4><p class="def__d">能够自动判断的事项进入 CI；文档与 prompt 负责提供背景和解释。</p></div></article>
+      <article class="def__i rise"><span class="def__n">08</span><div><h4 class="def__t">评估审查机制本身</h4><p class="def__d">关注有效发现、漏报与处理成本，不用评论数量衡量质量。</p></div></article>
+      <article class="def__i rise"><span class="def__n">09</span><div><h4 class="def__t">给 Agent 设置权限和停止条件</h4><p class="def__d">按风险限制工具与凭据，失败不收敛时保留信息并升级处理。</p></div></article>
+      <article class="def__i rise"><span class="def__n">10</span><div><h4 class="def__t">为交付与维护落实责任</h4><p class="def__d">记录开发、验证、返工和维护成本，确保关键模块有人理解、能够排障。</p></div></article>
+    </div>
+  </div>
+</section>
+<section id="measure">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">§ 05 — Measurement</div>
+      <div>
+        <h2 class="sec-title rise">如何得到本团队可信的发生率</h2>
+        <p class="sec-lede rise">如果要恢复「概率 × 影响」的风险矩阵，顺序不能颠倒：<b>先明确分母，再统一口径，最后才是数字。</b>已发现的问题比例，不等于全部真实缺陷的比例。</p>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step rise">
+        <div class="step__k">Step 01 / 定分母</div>
+        <div class="step__b">
+          <h4>先说清楚「按什么统计」</h4>
+          <p>按任务、PR、页面还是发布统计；再统一缺陷定义、验证范围与观察窗口。分母不明时，任何百分比都无法与另一份数据比较。</p>
+        </div>
+      </div>
+      <div class="step rise">
+        <div class="step__k">Step 02 / 记字段</div>
+        <div class="step__b">
+          <h4>为每个样本记录可比字段</h4>
+          <ul>
+            <li>任务类型、项目成熟度</li>
+            <li>模型与工具版本、AI 参与方式</li>
+            <li>改动范围、验证投入</li>
+            <li>最终结果</li>
+          </ul>
+        </div>
+      </div>
+      <div class="step rise">
+        <div class="step__k">Step 03 / 分三层统计</div>
+        <div class="step__b">
+          <h4>把「发现时机」拆开算</h4>
+          <p>分别统计<b>验收前发现的问题</b>、<b>上线逃逸缺陷</b>和<b>返工时间</b>，并给出样本量与不确定性。三者混在一个「缺陷率」里会掩盖真正的瓶颈位置。</p>
+        </div>
+      </div>
+      <div class="step rise">
+        <div class="step__k">Step 04 / 做对照</div>
+        <div class="step__b">
+          <h4>比较前先扣除难度差异</h4>
+          <p>比较使用与不使用 AI 的任务时，还要考虑任务难度、人员经验和代码量差异。只有这样，风险矩阵才能用于决定哪些任务适合自动推进、哪些需要补充证据、哪些需要人工介入。<b>不能用精确的百分比掩盖尚未测量的判断。</b></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="concl" id="conclusion" style="border-bottom:0">
+  <div class="wrap">
+    <div class="sec-id" style="margin-bottom:26px">§ 06 — Conclusion</div>
+    <p class="concl__q rise">让需求、实际产物和验证证据逐项对应，并把成本和责任延伸到上线之后。</p>
+    <div class="concl__b">
+      <p class="rise">现有研究提供了几条值得重视的线索：生成式 UI 的设计说明可能没有落实，公开 AI 前端项目中存在无障碍缺口，验证会消耗独立的工程成本，AI 审查也需要接受评估。这些线索支持加强交付控制，但<b>不支持为每类前端问题编造一个统一概率</b>。</p>
+      <p class="rise">对团队而言，最有用的升级就是上面那句话。模型与工具会变化，这套判断交付是否完成的方法仍然需要持续维护。</p>
+    </div>
+  </div>
+</section>
+
+<section id="refs">
+  <div class="wrap">
+    <div class="sec-head">
+      <div class="sec-id">§ 07 — References</div>
+      <div>
+        <h2 class="sec-title rise">参考资料</h2>
+        <p class="sec-lede rise">全部为原文列出的可核查出处。本页所有数字均可回溯到以下条目。</p>
+      </div>
+    </div>
+
+    <div class="refs">
+      <div class="ref"><span class="ref__n">01</span><div class="ref__t"><a href="https://arxiv.org/abs/2607.22928v1" target="_blank" rel="noopener">Design Theater: A Benchmark for Generative UI，2026-07-24 版本</a><span>本文使用其初始版本摘要中的评估口径，后续版本标题可能变化。</span></div></div>
+      <div class="ref"><span class="ref__n">02</span><div class="ref__t"><a href="https://www.designwithclaude.com/design-research/ai-generated-frontends" target="_blank" rel="noopener">How accessible is AI-generated UI?</a><span>页面更新于 2026 年 7 月。</span></div></div>
+      <div class="ref"><span class="ref__n">03</span><div class="ref__t"><a href="https://arxiv.org/abs/2607.03316" target="_blank" rel="noopener">Is Agentic Code Review Helpful? Mining Developers' Feedback to CodeRabbit Reviews in the Wild</a><span>2026-07-03。</span></div></div>
+      <div class="ref"><span class="ref__n">04</span><div class="ref__t"><a href="https://arxiv.org/abs/2608.21311" target="_blank" rel="noopener">AI-to-AI Code Reviews of GitHub Pull Requests</a><span>2026-08-21。页面标注获 ESEM 2026 Emerging Results, Vision, and Reflection Papers Track 接收。</span></div></div>
+      <div class="ref"><span class="ref__n">05</span><div class="ref__t"><a href="https://www.sonarsource.com/blog/state-of-code-developer-survey-report-the-current-reality-of-ai-coding/" target="_blank" rel="noopener">Sonar：State of Code Developer Survey report</a><span>2026-01-08。</span></div></div>
+      <div class="ref"><span class="ref__n">06</span><div class="ref__t"><a href="https://www.coderabbit.ai/blog/state-of-ai-vs-human-code-generation-report" target="_blank" rel="noopener">CodeRabbit：State of AI vs Human Code Generation</a><span>2025-12-17。</span></div></div>
+      <div class="ref"><span class="ref__n">07</span><div class="ref__t"><a href="https://dora.dev/research/2025/dora-report/" target="_blank" rel="noopener">DORA：State of AI-assisted Software Development 2025</a><span>组织放大器视角：AI 放大已有优势与弱点。</span></div></div>
+      <div class="ref"><span class="ref__n">08</span><div class="ref__t"><a href="https://react.dev/reference/react-dom/client/hydrateRoot" target="_blank" rel="noopener">React：hydrateRoot</a> · <a href="https://react.dev/learn/you-might-not-need-an-effect" target="_blank" rel="noopener">You Might Not Need an Effect</a><span>官方文档，用于 B2 / B4。</span></div></div>
+      <div class="ref"><span class="ref__n">09</span><div class="ref__t"><a href="https://cheatsheetseries.owasp.org/cheatsheets/Cross_Site_Scripting_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">OWASP：Cross Site Scripting Prevention Cheat Sheet</a> · <a href="https://cheatsheetseries.owasp.org/cheatsheets/LLM_Prompt_Injection_Prevention_Cheat_Sheet.html" target="_blank" rel="noopener">LLM Prompt Injection Prevention Cheat Sheet</a><span>用于 D1 / D4。</span></div></div>
+    </div>
+  </div>
+</section>
+</main>
+
+<footer class="foot">
+  <div class="wrap">
+    <p class="foot__rev"><span class="tag">REV 2026-09-20</span> 移除无法对应样本与出处的逐项发生概率及个案金额；修正「2.74 倍」的引用归属与含义；加入六项调查、审计或研究及适用范围；新增 A6 无障碍、A7 完成报告失真、E5 AI 审查有效性；调整安全风险分层；将绝对化的工具与流程建议改为按风险验收，并补充团队自测方法。</p>
+    <p class="foot__src">原文：<a href="https://github.com/kejun/blogpost/blob/main/2026-09-19-ai-coding-frontend-common-problems.md" target="_blank" rel="noopener">github.com/kejun/blogpost</a> · 本页为可视化重排，内容与数字均取自原文，未作增删推算</p>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* ---------- 滚动进度 ---------- */
+  var bar = document.getElementById('progress');
+  var ticking = false;
+  function onScroll(){
+    if(ticking) return; ticking = true;
+    requestAnimationFrame(function(){
+      var h = document.documentElement;
+      var max = h.scrollHeight - h.clientHeight;
+      bar.style.width = (max > 0 ? (h.scrollTop / max * 100) : 0) + '%';
+      ticking = false;
+    });
+  }
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+
+  /* ---------- 入场动画 ---------- */
+  var rises = document.querySelectorAll('.rise');
+  if(reduce || !('IntersectionObserver' in window)){
+    rises.forEach(function(el){ el.classList.add('in'); });
+  } else {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); }
+      });
+    }, {rootMargin:'0px 0px -8% 0px', threshold:0.06});
+    rises.forEach(function(el){ io.observe(el); });
+  }
+
+  /* ---------- 数字滚动 ---------- */
+  var counters = document.querySelectorAll('[data-count]');
+  function runCount(el){
+    var target = parseInt(el.getAttribute('data-count'),10) || 0;
+    if(reduce){ el.textContent = target; return; }
+    var t0 = null, dur = 900;
+    function step(ts){
+      if(!t0) t0 = ts;
+      var p = Math.min((ts - t0)/dur, 1);
+      el.textContent = Math.round(target * (1 - Math.pow(1-p,3)));
+      if(p < 1) requestAnimationFrame(step);
+    }
+    requestAnimationFrame(step);
+  }
+  if('IntersectionObserver' in window){
+    var cio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ runCount(e.target); cio.unobserve(e.target); } });
+    }, {threshold:0.4});
+    counters.forEach(function(el){ cio.observe(el); });
+  } else { counters.forEach(runCount); }
+
+  /* ---------- 证据条 ---------- */
+  var fills = document.querySelectorAll('.bar__fill');
+  function runBars(root){
+    root.querySelectorAll('.bar__fill').forEach(function(f){
+      f.style.width = (parseFloat(f.getAttribute('data-val')) || 0) + '%';
+    });
+  }
+  if(reduce || !('IntersectionObserver' in window)){
+    fills.forEach(function(f){ f.style.width = (parseFloat(f.getAttribute('data-val'))||0)+'%'; });
+  } else {
+    var bio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ runBars(e.target); bio.unobserve(e.target); } });
+    }, {threshold:0.25});
+    document.querySelectorAll('.ev').forEach(function(c){ bio.observe(c); });
+  }
+
+  /* ---------- 手风琴（事件委托） ---------- */
+  var root = document.getElementById('matrixRoot');
+  function setOpen(item, open){
+    var body = item.querySelector('.item__body');
+    var btn = item.querySelector('.item__btn');
+    if(open){ body.hidden = false; item.classList.add('open'); btn.setAttribute('aria-expanded','true'); }
+    else { body.hidden = true; item.classList.remove('open'); btn.setAttribute('aria-expanded','false'); }
+  }
+  root.addEventListener('click', function(ev){
+    var btn = ev.target.closest('.item__btn');
+    if(!btn) return;
+    var item = btn.closest('.item');
+    var willOpen = !item.classList.contains('open');
+    /* 同组内互斥，保持列表紧凑 */
+    var grp = item.closest('[data-group]');
+    if(grp && willOpen){
+      grp.querySelectorAll('.item.open').forEach(function(o){ if(o !== item) setOpen(o, false); });
+    }
+    setOpen(item, willOpen);
+  });
+  /* 键盘：Alt+↓/↑ 在条目间移动焦点 */
+  root.addEventListener('keydown', function(ev){
+    if(!ev.altKey) return;
+    if(ev.key !== 'ArrowDown' && ev.key !== 'ArrowUp') return;
+    ev.preventDefault();
+    var btns = Array.prototype.slice.call(root.querySelectorAll('.item:not(.is-hidden) .item__btn'));
+    var i = btns.indexOf(document.activeElement);
+    if(i < 0) return;
+    var n = ev.key === 'ArrowDown' ? Math.min(i+1, btns.length-1) : Math.max(i-1, 0);
+    btns[n].focus();
+  });
+
+  /* ---------- 层级筛选 ---------- */
+  var chips = document.querySelectorAll('.chip[data-filter]');
+  var items = Array.prototype.slice.call(root.querySelectorAll('.item'));
+  var groups = Array.prototype.slice.call(root.querySelectorAll('[data-group]'));
+  var countEl = document.getElementById('fcount');
+  var emptyEl = document.getElementById('empty');
+
+  function applyFilter(tier){
+    var shown = 0;
+    items.forEach(function(it){
+      var hit = (tier === 'all') || it.getAttribute('data-tier') === tier;
+      it.classList.toggle('is-hidden', !hit);
+      if(hit) shown++; else setOpen(it, false);
+    });
+    groups.forEach(function(g){
+      var any = g.querySelector('.item:not(.is-hidden)');
+      g.classList.toggle('is-hidden', !any);
+      if(any){
+        var c = g.querySelectorAll('.item:not(.is-hidden)').length;
+        var cell = g.querySelector('.grp__c');
+        if(cell) cell.textContent = c + ' 项';
+      }
+    });
+    countEl.textContent = '显示 ' + shown + ' / ' + items.length;
+    emptyEl.classList.toggle('is-hidden', shown !== 0);
+    chips.forEach(function(c){ c.setAttribute('aria-pressed', String(c.getAttribute('data-filter') === tier)); });
+  }
+  document.querySelector('.filters').addEventListener('click', function(ev){
+    var chip = ev.target.closest('.chip[data-filter]');
+    if(!chip) return;
+    applyFilter(chip.getAttribute('data-filter'));
+  });
+
+  /* ---------- 分层徽标跳转 ---------- */
+  document.querySelectorAll('[data-jump]').forEach(function(b){
+    b.addEventListener('click', function(){
+      var id = b.getAttribute('data-jump');
+      var target = document.getElementById(id);
+      if(!target) return;
+      /* 若被筛掉则先恢复全部 */
+      if(target.classList.contains('is-hidden')) applyFilter('all');
+      setOpen(target, true);
+      target.scrollIntoView({behavior: reduce ? 'auto' : 'smooth', block:'center'});
+      target.classList.remove('flash');
+      void target.offsetWidth;
+      target.classList.add('flash');
+    });
+  });
+
+  /* ---------- 导航高亮 ---------- */
+  var secs = ['overview','evidence','matrix','tiers','defense','measure','refs']
+    .map(function(id){ return document.getElementById(id); })
+    .filter(Boolean);
+  var links = Array.prototype.slice.call(document.querySelectorAll('.nav__links a'));
+  if('IntersectionObserver' in window){
+    var nio = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if(!e.isIntersecting) return;
+        var id = e.target.id;
+        links.forEach(function(a){
+          a.setAttribute('aria-current', String(a.getAttribute('href') === '#' + id));
+        });
+      });
+    }, {rootMargin:'-25% 0px -65% 0px'});
+    secs.forEach(function(s){ nio.observe(s); });
+  }
+})();
+</script>
 </body>
 </html>
